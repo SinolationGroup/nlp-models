@@ -1,0 +1,4 @@
+[core]
+    remote = model_registry
+['remote "model_registry"']
+    url = gdrive://1b0dSnML1zclaRpFooPfboclqli5072Ze
