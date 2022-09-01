@@ -165,3 +165,4 @@ wandb
 artifacts
 .vscode
 *.pem
+models/chkpts/*

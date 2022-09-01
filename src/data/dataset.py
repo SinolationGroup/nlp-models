@@ -31,18 +31,18 @@ class OHLDataset(Dataset):
         text = self.texts[idx]
         label = self.labels[idx]
 
-        label_ohe = torch.zeros(self.n_classes, dtype=torch.int)
-        label_ohe[label] = 1
+        # label_ohe = torch.zeros(self.n_classes, dtype=torch.int)
+        # label_ohe[label] = 1
 
         if self.augmentation:
             text = self.augmentation(text)
 
-        if self.tokenizer:
-            text = self.tokenizer(text, padding="max_length", truncation=True)
-            data = {}
-            data["input_ids"] = torch.IntTensor(text["input_ids"])
-            data["attention_mask"] = torch.FloatTensor(text["attention_mask"])
-            data["labels"] = torch.IntTensor(label_ohe).squeeze(0)
+        # if self.tokenizer:
+        text = self.tokenizer(text, padding="max_length", truncation=True)
+        data = {}
+        data["input_ids"] = torch.IntTensor(text["input_ids"])
+        data["attention_mask"] = torch.FloatTensor(text["attention_mask"])
+        data["labels"] = torch.LongTensor([label])
 
         # return text, torch.FloatTensor(label_ohe)
         return data
