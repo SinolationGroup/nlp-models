@@ -41,22 +41,20 @@ class OHLModel(LightningModule):
         self.accuracy = Accuracy(num_classes=self.hparams.n_classes)
         self.accuracy_top5 = Accuracy(num_classes=self.hparams.n_classes, top_k=5)
         self.f1 = F1Score(num_classes=self.hparams.n_classes, average="macro")
-        self.f1_top5 = F1Score(
-            num_classes=self.hparams.n_classes, average="macro", top_k=5
-        )
+        # self.f1_top5 = F1Score(
+        #     num_classes=self.hparams.n_classes, average="macro", top_k=5
+        # )
         self.metrics = [
             ("accuracy", self.accuracy),
             ("accuracy_top5", self.accuracy_top5),
             ("f1", self.f1),
-            ("f1_top5", self.f1_top5),
+            # ("f1_top5", self.f1_top5),
         ]
 
-        self.val_precision = Precision(num_classes=self.hparams.n_classes, average=None)
-        self.val_recall = Recall(num_classes=self.hparams.n_classes, average=None)
         self.val_f1 = F1Score(num_classes=self.hparams.n_classes, average="macro")
-        self.val_f1_top5 = F1Score(
-            num_classes=self.hparams.n_classes, average="macro", top_k=5
-        )
+        # self.val_f1_top5 = F1Score(
+        #     num_classes=self.hparams.n_classes, average="macro", top_k=5
+        # )
         self.val_accuracy = Accuracy(num_classes=self.hparams.n_classes)
         self.val_accuracy_top5 = Accuracy(num_classes=self.hparams.n_classes, top_k=5)
         # self.val_cm = ConfusionMatrix(num_classes=self.hparams.n_classes)
@@ -64,9 +62,20 @@ class OHLModel(LightningModule):
             # ("precision", self.val_precision),
             # ("recall", self.val_recall),
             ("f1", self.val_f1),
-            ("f1_top5", self.val_f1_top5),
+            # ("f1_top5", self.val_f1_top5),
             ("accuracy", self.val_accuracy),
             ("accuracy_top5", self.val_accuracy_top5),
+        ]
+
+        self.report_precision = Precision(
+            num_classes=self.hparams.n_classes, average=None
+        )
+        self.report_recall = Recall(num_classes=self.hparams.n_classes, average=None)
+        self.report_f1 = F1Score(num_classes=self.hparams.n_classes, average=None)
+        self.report_metrics = [
+            ("precision", self.report_precision),
+            ("recall", self.report_recall),
+            ("f1", self.report_f1),
         ]
 
     def forward(self, x):
@@ -116,16 +125,16 @@ class OHLModel(LightningModule):
     #     print("train", self.current_epoch)
 
     def validation_epoch_end(self, outputs):
-        pass
+        # pass
         # print("val", self.current_epoch)
-        # preds = torch.cat([tmp["preds"] for tmp in outputs])
-        # targets = torch.cat([tmp["target"] for tmp in outputs])
+        preds = torch.cat([tmp["preds"] for tmp in outputs])
+        targets = torch.cat([tmp["target"] for tmp in outputs])
 
         # log classification report
-        # report = self.get_classification_report(preds, targets)
-        # self.logger.log_text(
-        #     key="Metrics", dataframe=report, step=self.trainer.global_step
-        # )
+        report = self.get_classification_report(preds, targets)
+        self.logger.log_text(
+            key="Metrics", dataframe=report, step=self.trainer.global_step
+        )
 
         # log confusion matrix
         # cm_img = self.get_confusion_matrix(preds, targets)
@@ -160,12 +169,22 @@ class OHLModel(LightningModule):
     def get_classification_report(self, preds, targets):
         metric_values = {
             metric_name: f(preds, targets).detach().cpu().numpy()
-            for metric_name, f in self.val_metrics
+            for metric_name, f in self.report_metrics
         }
         report = pd.DataFrame(
             metric_values,
             index=self.hparams.class_names,
         )
+
+        unique, counts = np.unique(targets.detach().cpu().numpy(), return_counts=True)
+        counter = {
+            self.hparams.class_names[class_idx]: count
+            for class_idx, count in zip(unique, counts)
+        }
+
+        report["n"] = pd.Series(counter)
+        report["label"] = report.index.values
+        report.sort_values(by="f1", inplace=True, ascending=False)
 
         return report
 
