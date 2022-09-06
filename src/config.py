@@ -1,6 +1,6 @@
 SEED = 42
 MODEL_NAME = "distilbert-base-uncased"
-LR = 1e-5
+LR = 1e-4
 PATH_DATASET = "data/processed/dataset.csv"
 MAX_LENGTH = 512
 TEST_SIZE = 0.3
