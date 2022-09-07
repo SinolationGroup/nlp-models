@@ -22,10 +22,10 @@ class OHLDataModule(LightningDataModule):
     def __init__(
         self,
         data_path: str,
-        max_length: int,
         train_bs: int,
         valid_bs: int,
         test_size: float,
+        max_length: int = None,
         model_name=None,
         aug=False,
     ):
@@ -72,6 +72,16 @@ class OHLDataModule(LightningDataModule):
 
         tokenizer = AutoTokenizer.from_pretrained(self.hparams.model_name)
 
+        # get max length
+        if self.hparams.max_length is None:
+            lens = []
+            for _, row in tqdm(dataset_df.iterrows(), total=dataset_df.shape[0]):
+                lens.append(len(tokenizer(row["question"])["input_ids"]))
+            self.hparams.max_length = (
+                int(max(lens) * 1.2) if max(lens) * 1.2 < 512 else 512
+            )
+        # tokenizer.model_max_length: int = self.hparams.max_length
+
         self.train_ds = OHLDataset(
             [texts[idx] for idx in train_ids],
             [labels[idx] for idx in train_ids],
@@ -97,7 +107,7 @@ class OHLDataModule(LightningDataModule):
             pin_memory=True,
             drop_last=True,
             shuffle=True,
-            num_workers=4,
+            num_workers=8,
         )
 
     def val_dataloader(self):
@@ -107,7 +117,7 @@ class OHLDataModule(LightningDataModule):
             pin_memory=True,
             drop_last=False,
             shuffle=False,
-            num_workers=4,
+            num_workers=8,
         )
 
     def test_dataloader(self):

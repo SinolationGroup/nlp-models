@@ -1,9 +1,10 @@
 SEED = 42
 MODEL_NAME = "distilbert-base-uncased"
-LR = 1e-4
+LR_TOP = 1e-4
+LR_BOTTOM = 1e-5
 PATH_DATASET = "data/processed/dataset.csv"
-MAX_LENGTH = 512
+MAX_LENGTH = None
 TEST_SIZE = 0.3
-TRAIN_BATCH_SIZE = 32
-VALID_BATCH_SIZE = 32
+TRAIN_BATCH_SIZE = 64
+VALID_BATCH_SIZE = 64
 N_EPOCHS = 10

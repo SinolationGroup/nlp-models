@@ -38,7 +38,9 @@ class OHLDataset(Dataset):
             text = self.augmentation(text)
 
         # if self.tokenizer:
-        text = self.tokenizer(text, padding="max_length", truncation=True)
+        text = self.tokenizer(
+            text, padding="max_length", truncation=True, max_length=self.max_length
+        )
         data = {}
         data["input_ids"] = torch.IntTensor(text["input_ids"])
         data["attention_mask"] = torch.FloatTensor(text["attention_mask"])

@@ -28,21 +28,22 @@ def train():
 
     model = OHLModel(
         model_name=MODEL_NAME,
-        lr=LR,
+        lr_top=LR_TOP,
+        lr_bottom=LR_BOTTOM,
         n_classes=data_module.num_classes,
         class_names=data_module.class_names,
     )
 
+    current_datetime = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
         mode="min",
         save_last=True,
-        dirpath="./models/chkpts/",
+        dirpath="./models/chkpts/" + current_datetime,
         filename="{epoch}-{val_f1:.2f}-{val_accuracy:.2f}-{val_loss:.4f}",
     )
 
     # run_id = None
-    current_datetime = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
     wandb_logger = WandbLogger(
         project="OHL",
         log_model="False",
@@ -59,7 +60,7 @@ def train():
         log_every_n_steps=6,
         deterministic=True,
         logger=wandb_logger,
-        val_check_interval=1000,
+        # val_check_interval=1000,
     )
 
     trainer.fit(model, datamodule=data_module)
