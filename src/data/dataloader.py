@@ -1,9 +1,7 @@
-import os
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import nlpaug.augmenter.char as nac
 import nlpaug.augmenter.word as naw
-import nlpaug.flow as naf
 import numpy as np
 import pandas as pd
 from pytorch_lightning import LightningDataModule
@@ -21,15 +19,35 @@ from src.data.dataset import OHLDataset
 class OHLDataModule(LightningDataModule):
     def __init__(
         self,
+        model_name: str,
         data_path: str,
         train_bs: int,
         valid_bs: int,
         test_size: float,
-        max_length: int = None,
-        model_name=None,
+        max_length: Tuple[int, None] = None,
         aug=False,
     ):
+        """LightningDataModule wrapper for training of transformer model
 
+        Parameters
+        ----------
+        model_name : str
+            name of huggingface transformers model
+        data_path : str
+            dataset path
+        train_bs : int
+            train batch size
+        valid_bs : int
+            validation batch size
+        test_size : float
+            test size for train_test_split sklearn's function.
+            should be between 0.0 and 1.0
+        max_length : int, optional
+            max_length for transformers tokenizer.
+            If None then this will be computed dynamicaly based on data. By default None
+        aug : bool, optional
+            If True then augmentations will be applied, by default False
+        """
         super().__init__()
 
         self.data_path = data_path
@@ -87,19 +105,21 @@ class OHLDataModule(LightningDataModule):
         self.train_ds = OHLDataset(
             [texts[idx] for idx in train_ids],
             [labels[idx] for idx in train_ids],
-            self.num_classes,
-            self.hparams.max_length,
-            augmentation=self.train_aug,
+            # texts,
+            # labels,
             tokenizer=tokenizer,
+            n_classes=self.num_classes,
+            max_length=self.hparams.max_length,
+            augmentation=self.train_aug,
         )
 
         self.valid_ds = OHLDataset(
             [texts[idx] for idx in valid_ids],
             [labels[idx] for idx in valid_ids],
-            self.num_classes,
-            self.hparams.max_length,
-            augmentation=self.valid_aug,
             tokenizer=tokenizer,
+            n_classes=self.num_classes,
+            max_length=self.hparams.max_length,
+            augmentation=self.valid_aug,
         )
 
     def train_dataloader(self):

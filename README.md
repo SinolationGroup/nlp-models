@@ -66,6 +66,8 @@ You need to add new questions and labels to `data/processed/dataset.csv` and run
 
 ## Inference pipeline
 
+Inference dependencies only include torch and transformers libraries. Code of inference model can be found in `src/model/predict_model.py` file
+
 1. Import model code
 
     ```python
@@ -118,7 +120,7 @@ You need to add new questions and labels to `data/processed/dataset.csv` and run
 
     ```python
     class_names = []
-        with open("data/processed/class_names.txt", "r") as f:
+        with open("data/interim/class_names.txt", "r") as f:
             for line in f:
                 class_names.append(line.strip())
     ```
@@ -138,3 +140,5 @@ You can find an example of using the model in the file `app/demo.py`. To run dem
 ```bash
 streamlit run app/demo.py
 ```
+
+Also there is an example in `notebooks/08-predict.ipynb` file

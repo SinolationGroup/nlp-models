@@ -1,7 +1,6 @@
 from typing import List
 
 import torch
-from PIL import Image
 from torch.utils.data import Dataset
 
 
@@ -10,10 +9,10 @@ class OHLDataset(Dataset):
         self,
         texts: List[str],
         labels: List[int],
-        n_classes: int = 5,
+        tokenizer,
+        n_classes: int = 296,
         max_length: int = 512,
         augmentation=None,
-        tokenizer=None,
     ):
 
         self.texts = texts
@@ -31,13 +30,9 @@ class OHLDataset(Dataset):
         text = self.texts[idx]
         label = self.labels[idx]
 
-        # label_ohe = torch.zeros(self.n_classes, dtype=torch.int)
-        # label_ohe[label] = 1
-
         if self.augmentation:
             text = self.augmentation(text)
 
-        # if self.tokenizer:
         text = self.tokenizer(
             text, padding="max_length", truncation=True, max_length=self.max_length
         )
@@ -46,5 +41,4 @@ class OHLDataset(Dataset):
         data["attention_mask"] = torch.FloatTensor(text["attention_mask"])
         data["labels"] = torch.LongTensor([label])
 
-        # return text, torch.FloatTensor(label_ohe)
         return data

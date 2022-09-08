@@ -6,7 +6,7 @@ import torch
 
 from src.models.predict_model import OHLProductionModel
 
-MODEL_ID = "models/chkpts/07-09-2022_12:38:02/epoch=4-val_f1=0.95-val_accuracy=0.99-val_loss=0.0226.ckpt"
+MODEL_ID = "models/chkpts/08-09-2022_19:15:03/epoch=1-val_f1=0.95-val_accuracy=0.99-val_loss=0.0250.ckpt"
 DEVICE = "cpu"
 
 st.set_page_config(
@@ -14,7 +14,7 @@ st.set_page_config(
     page_icon=":hugging_face:",
 )
 
-st.header("Text Matching Demo")
+st.header("Demo")
 
 # init model
 @st.cache(show_spinner=True, allow_output_mutation=False)

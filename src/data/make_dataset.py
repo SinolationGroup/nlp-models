@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+"""
+This file generate dataset from raw and external data 
+"""
 import re
 from random import choice
 from typing import Dict
@@ -29,7 +31,7 @@ def format_data(text: str, label: int, q_idx: int) -> dict:
     data_dict = {}
     data_dict["question"] = text
     data_dict["label"] = label
-    data_dict["question_type"] = q_idx
+    # data_dict["question_type"] = q_idx
     return data_dict
 
 
@@ -37,7 +39,9 @@ def format_data(text: str, label: int, q_idx: int) -> dict:
 @click.argument("raw_data_filepath", type=click.Path(exists=True))
 @click.argument("phrase_data_filepath", type=click.Path(exists=True))
 @click.argument("output_filepath", type=click.Path())
-def main(raw_data_filepath, phrase_data_filepath, output_filepath):
+def main(
+    raw_data_filepath: str, phrase_data_filepath: str, output_filepath: str
+) -> None:
 
     # read raw data and get question type
     df = pd.read_csv(raw_data_filepath)
