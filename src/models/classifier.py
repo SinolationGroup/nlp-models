@@ -158,11 +158,11 @@ class OHLModel(LightningModule):
 
         return {
             "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": lr_scheduler,
-                "frequency": 1,
-                "interval": "step",
-            },
+            # "lr_scheduler": {
+            #     "scheduler": lr_scheduler,
+            #     "frequency": 1,
+            #     "interval": "step",
+            # },
         }
 
     def get_progress_bar_dict(self):

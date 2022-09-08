@@ -56,6 +56,8 @@ class OHLDataModule(LightningDataModule):
         labels: List[int] = l_encoder.transform(dataset_df["label"].values)
         self.num_classes = np.unique(labels).shape[0]
         self.class_names = l_encoder.classes_
+        with open("data/interim/class_names.txt", "w") as f:
+            f.write("\n".join(self.class_names))
 
         print("Loading data ...")
 

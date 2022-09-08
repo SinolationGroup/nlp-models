@@ -60,6 +60,7 @@ def train():
         log_every_n_steps=6,
         deterministic=True,
         logger=wandb_logger,
+        # accumulate_grad_batches=2,
         # val_check_interval=1000,
     )
 

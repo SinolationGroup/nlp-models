@@ -1,5 +1,8 @@
+from typing import List, Text
+
 import torch
-from service_streamer import ThreadedStreamer
+
+# from service_streamer import ThreadedStreamer
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
@@ -23,38 +26,36 @@ class OHLProductionModel(torch.nn.Module):
         self.model = AutoModelForSequenceClassification.from_pretrained(
             self.model_name, num_labels=self.n_classes
         ).to(self.device)
-        self.softmax = torch.nn.Softmax()
+        self.softmax = torch.nn.Softmax(dim=1)
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.streamer = ThreadedStreamer(
-            self.predict_batch, self.batch_size, self.max_latency
-        )
+        # self.streamer = ThreadedStreamer(
+        #     self.predict_batch, self.batch_size, self.max_latency
+        # )
 
     def forward(self, x):
         x = self.model(**x)
         x = self.softmax(x.logits)
         return x
 
-    def preprocess_input(self, text: str):
-        text = self.tokenizer(text, padding="max_length", truncation=True)
-        data = {}
-        data["input_ids"] = torch.IntTensor(text["input_ids"])
-        data["attention_mask"] = torch.FloatTensor(text["attention_mask"])
+    def preprocess_input(self, text_list: List[Text]):
+        data = self.tokenizer(
+            text_list, padding="longest", truncation=True, return_tensors="pt"
+        )
+        data = {k: v.to(self.device) for k, v in data.items()}
         return data
 
-    def predict_batch(self, text_batch):
-        """
-        Predict function for service streamer
-        """
-        for idx, image in enumerate(text_batch):
-            text_batch[idx] = self.preprocessing_fn(image)
-        with torch.no_grad():
-            preds = self(torch.stack(text_batch).to(self.device))
-        preds = preds.cpu().detach().numpy()
-        return preds
+    # def predict_batch(self, text_batch):
+    #     """
+    #     Predict function for service streamer
+    #     """
+    #     text_batch = self.preprocess_input(text_batch)
+    #     with torch.no_grad():
+    #         preds = self(text_batch)
+    #     preds = preds.cpu().detach().numpy()
+    #     return preds
 
     def warmup(self):
         input = self.preprocess_input("warmup text")
-        input = {k: v.unsqueeze(0).to(self.device) for k, v in input.items()}
         with torch.no_grad():
             self(input)
