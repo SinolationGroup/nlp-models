@@ -25,7 +25,8 @@ class OHLModel(LightningModule):
         n_classes,
         class_names,
         model_name="distilbert-base-uncased",
-        lr=0.001,
+        lr_top=0.001,
+        lr_bottom=0.00005,
         class_weights=None,
     ):
         super().__init__()
@@ -143,20 +144,24 @@ class OHLModel(LightningModule):
         # )
 
     def configure_optimizers(self):
-        optimizer = AdamW(self.parameters(), lr=self.hparams.lr)
-        # lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-        #     optimizer, T_0=10, T_mult=2, eta_min=0.0001, last_epoch=-1
-        # )
+        optimizer = AdamW(self.parameters(), lr=self.hparams.lr_top)
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer,
+            T_0=10000,
+            T_mult=1,
+            eta_min=self.hparams.lr_bottom,
+            last_epoch=-1,
+        )
 
-        lambda1 = lambda epoch: 0.9**epoch
-        lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
+        # lambda1 = lambda epoch: 0.9**epoch
+        # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
 
         return {
             "optimizer": optimizer,
             # "lr_scheduler": {
             #     "scheduler": lr_scheduler,
             #     "frequency": 1,
-            #     "interval": "epoch",
+            #     "interval": "step",
             # },
         }
 

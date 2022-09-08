@@ -1,0 +1,12 @@
+schema: '2.0'
+stages:
+  make_dataset:
+    cmd: python -m src.data.make_dataset "data/raw/NLP training data 0816.csv" "data/external/paraphrased_questions.xlsx"
+      "data/processed/dataset.csv"
+    deps:
+    - path: data/external/paraphrased_questions.xlsx
+      md5: 2441150813be926ba064760dccfd650c
+      size: 13125
+    - path: data/raw/NLP training data 0816.csv
+      md5: 11362ff89b3e98790a0a735855b9be9e
+      size: 2186429

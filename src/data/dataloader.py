@@ -1,9 +1,7 @@
-import os
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import nlpaug.augmenter.char as nac
 import nlpaug.augmenter.word as naw
-import nlpaug.flow as naf
 import numpy as np
 import pandas as pd
 from pytorch_lightning import LightningDataModule
@@ -21,15 +19,35 @@ from src.data.dataset import OHLDataset
 class OHLDataModule(LightningDataModule):
     def __init__(
         self,
+        model_name: str,
         data_path: str,
-        max_length: int,
         train_bs: int,
         valid_bs: int,
         test_size: float,
-        model_name=None,
+        max_length: Tuple[int, None] = None,
         aug=False,
     ):
+        """LightningDataModule wrapper for training of transformer model
 
+        Parameters
+        ----------
+        model_name : str
+            name of huggingface transformers model
+        data_path : str
+            dataset path
+        train_bs : int
+            train batch size
+        valid_bs : int
+            validation batch size
+        test_size : float
+            test size for train_test_split sklearn's function.
+            should be between 0.0 and 1.0
+        max_length : int, optional
+            max_length for transformers tokenizer.
+            If None then this will be computed dynamicaly based on data. By default None
+        aug : bool, optional
+            If True then augmentations will be applied, by default False
+        """
         super().__init__()
 
         self.data_path = data_path
@@ -56,6 +74,8 @@ class OHLDataModule(LightningDataModule):
         labels: List[int] = l_encoder.transform(dataset_df["label"].values)
         self.num_classes = np.unique(labels).shape[0]
         self.class_names = l_encoder.classes_
+        with open("data/interim/class_names.txt", "w") as f:
+            f.write("\n".join(self.class_names))
 
         print("Loading data ...")
 
@@ -72,22 +92,34 @@ class OHLDataModule(LightningDataModule):
 
         tokenizer = AutoTokenizer.from_pretrained(self.hparams.model_name)
 
+        # get max length
+        if self.hparams.max_length is None:
+            lens = []
+            for _, row in tqdm(dataset_df.iterrows(), total=dataset_df.shape[0]):
+                lens.append(len(tokenizer(row["question"])["input_ids"]))
+            self.hparams.max_length = (
+                int(max(lens) * 1.2) if max(lens) * 1.2 < 512 else 512
+            )
+        # tokenizer.model_max_length: int = self.hparams.max_length
+
         self.train_ds = OHLDataset(
             [texts[idx] for idx in train_ids],
             [labels[idx] for idx in train_ids],
-            self.num_classes,
-            self.hparams.max_length,
-            augmentation=self.train_aug,
+            # texts,
+            # labels,
             tokenizer=tokenizer,
+            n_classes=self.num_classes,
+            max_length=self.hparams.max_length,
+            augmentation=self.train_aug,
         )
 
         self.valid_ds = OHLDataset(
             [texts[idx] for idx in valid_ids],
             [labels[idx] for idx in valid_ids],
-            self.num_classes,
-            self.hparams.max_length,
-            augmentation=self.valid_aug,
             tokenizer=tokenizer,
+            n_classes=self.num_classes,
+            max_length=self.hparams.max_length,
+            augmentation=self.valid_aug,
         )
 
     def train_dataloader(self):
@@ -97,7 +129,7 @@ class OHLDataModule(LightningDataModule):
             pin_memory=True,
             drop_last=True,
             shuffle=True,
-            num_workers=4,
+            num_workers=8,
         )
 
     def val_dataloader(self):
@@ -107,7 +139,7 @@ class OHLDataModule(LightningDataModule):
             pin_memory=True,
             drop_last=False,
             shuffle=False,
-            num_workers=4,
+            num_workers=8,
         )
 
     def test_dataloader(self):

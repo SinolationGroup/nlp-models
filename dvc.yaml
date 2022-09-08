@@ -1,0 +1,10 @@
+stages:
+  make_dataset:
+    cmd: python -m src.data.make_dataset "data/raw/NLP training data 0816.csv" "data/external/paraphrased_questions.xlsx" "data/processed/dataset.csv"
+    deps:
+    - data/raw/NLP training data 0816.csv
+    - data/external/paraphrased_questions.xlsx
+  train:
+    cmd: python -m src.models.train_model
+    deps:
+    - src
