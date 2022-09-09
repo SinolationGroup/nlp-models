@@ -12,7 +12,7 @@ We used Transformers and Pytorch.  During the training, we used Pytorch Lightnin
 
 - Ubuntu 20.04
 - Python 3.8
-- RTX 3060 12GB
+- GPU RTX 3060 12GB
 - CUDA 11.3
 - Libraries in `requirements.txt` file. Run
 
@@ -67,6 +67,11 @@ You need to add new questions and labels to `data/processed/dataset.csv` and run
 ## Inference pipeline
 
 Inference dependencies only include torch and transformers libraries. Code of inference model can be found in `src/model/predict_model.py` file
+
+```bash
+pip3 install torch==1.11.0 --extra-index-url https://download.pytorch.org/whl/cpu
+pip install transformers==4.21.1
+```
 
 1. Import model code
 
@@ -128,9 +133,9 @@ Inference dependencies only include torch and transformers libraries. Code of in
 7. Get class name
 
     ```python
-    idx = pred.argsort[axis=1](::-1) # descending sort
-    pred_class_name = class_names[idx[0][0]] # the class with the highest probability for the first text
-    pred_class_name = class_names[idx[1][0]] # for the second text
+    idx = pred.argsort[axis=1]
+    pred_class_name = class_names[idx[0][::-1][0]] # the class with the highest probability for the first text
+    pred_class_name = class_names[idx[1][::-1][0]] # for the second text
     ```
 
 ## Demo

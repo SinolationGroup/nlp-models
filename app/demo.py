@@ -6,7 +6,7 @@ import torch
 
 from src.models.predict_model import OHLProductionModel
 
-MODEL_ID = "models/chkpts/08-09-2022_19:15:03/epoch=1-val_f1=0.95-val_accuracy=0.99-val_loss=0.0250.ckpt"
+MODEL_ID = "models/chkpts/08-09-2022_19:15:03/last.ckpt"
 DEVICE = "cpu"
 
 st.set_page_config(
