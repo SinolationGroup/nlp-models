@@ -140,7 +140,7 @@ pip install transformers==4.21.1
 
 ## Demo
 
-You can find an example of using the model in the file `app/demo.py`. To run demo execute command and open <http://localhost:8501> in browser
+You can find an example of using the model in the file `app/demo.py`. First you need to copy file `last.ckpt` to the folder `models`. To run demo execute command and open <http://localhost:8501> in browser
 
 ```bash
 streamlit run app/demo.py
