@@ -166,3 +166,4 @@ artifacts
 .vscode
 *.pem
 models/chkpts/*
+*.ckpt
